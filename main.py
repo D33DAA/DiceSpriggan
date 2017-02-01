@@ -88,3 +88,6 @@ def on_message(message):
 /egg - we don't talk about eggs here...```''')
 
 jigs = 0
+with open("client key.txt", "r") as f:
+    key = f.readline().strip("\n")
+client.run(key)
