@@ -88,4 +88,3 @@ def on_message(message):
 /egg - we don't talk about eggs here...```''')
 
 jigs = 0
-client.run("Mjc2MzYyNzYxNjQ1MTk1MjY1.C3OLzg.Xgezv8yejsBdQ7YMzqm7pR1NiVo")
