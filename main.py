@@ -1,5 +1,5 @@
 try:
-    import discord, random, logging, asyncio
+    import discord, random, logging, asyncio, re
 except:
     input("Some modules don't appear to be in place.\nPress Enter to exit.")
     quit()
@@ -16,15 +16,22 @@ client = discord.Client()
 async def dice_roller(message):
     sender = message.author.display_name or message.author.name
     content = (message.content).split()[1]
+    if not re.search((r"\d+d\d+[+/*-]{0,1}\d*"),content):
+        errorCode = "... Jig?\n```The spriggan is confused. Please ensure your roll follows the correct syntax.```"
+        return errorCode
+    
     diceNumber = int(content.split("d")[0])
     diceRemain = content.split("d")[1]
     diceSide = 0
     diceMod = 0
     diceOperator = 0
 
-    if diceNumber == 0:
-        errorCode = "Is {0} is want spriggy roll dice with no dice? ... Jig?\n```The spriggan is confused. You cannot roll zero dice.```"
+    if diceNumber < 1:
+        errorCode = "Is {0} is want spriggy roll dice with no dice? ... Jig?\n```The spriggan is confused. You cannot roll fewer than one dice.```"
         return errorCode.format(sender)
+    if diceNumber > 25:
+        errorCode = "***AAAAAIIEEEEEEEEEEEEEE!!!***\n```Now you've scared him. He only has tiny hands. Please don't ask him to roll so many dice.```"
+        return errorCode
     
     if "+" in diceRemain:
         diceSide = int(diceRemain.split("+")[0])
@@ -44,8 +51,11 @@ async def dice_roller(message):
         diceOperator = "/"
     else:
         diceSide = int(diceRemain)
-
-    if diceSide == 0:
+        
+    if diceSide == 1:
+        errorCode = "Spriggy roll! And roll! And roll! And roll! And roll... and... spriggy... sleepyzzzz...\n```Now you've done it. The non-stop rolling put the spriggan to sleep. Please do not roll spherical dice.```"
+        return errorCode
+    elif diceSide < 2:
         errorCode = "Is {0} is want spriggy is roll dice with no SIDES?! Is Spriggy is LOSE DICE? WHERE IS DICE?! **AAAAIIEEEEEE!!**\n```The spriggan is confused. You cannot roll a dice with no sides.```"
         return errorCode.format(sender)
 
@@ -62,12 +72,12 @@ async def dice_roller(message):
             diceFinal = sum(diceTotal) * diceMod
         elif diceOperator == "/":
             diceFinal = sum(diceTotal) / diceMod
-        diceMessage = "{0} rolls: `{1}`*{2}{3}{4}* (**{5}**)"
-        output = (diceMessage.format(sender,content,str(diceTotal),diceOperator,str(diceMod),str(diceFinal)))  
+        diceMessage = "{0} rolls: `{1}`\n{2} {3} {4} (**{5}**)"
+        output = diceMessage.format(sender,content,diceTotal,diceOperator,diceMod,diceFinal)  
     else:
         diceFinal = sum(diceTotal)
-        diceMessage = "{0} rolls: `{1}`*{2}* (**{3}**)"
-        output = diceMessage.format(sender,content,str(diceTotal),str(diceFinal))
+        diceMessage = "{0} rolls: `{1}`\n{2} (**{3}**)"
+        output = diceMessage.format(sender,content,diceTotal,diceFinal)
     
     return output
 
@@ -89,10 +99,10 @@ async def on_message(message):
     if message.content == ("/help") or message.content == ("/?"):
         await client.send_message(message.channel,
             '''```DiceSpriggan Commands:
-===========
+
 /help /? - display this menu
 /jig - Jig!
-/roll 1d20 /r 1d20 - rolls a 20-sided dice. accepts modifiers and multiple dice
+/roll /r - rolls a dice. specify number, sides and modifier (example: 1d20+2, 2d6-1, 4d8*2, 2d4/2)
 /egg - we don't talk about eggs here...```''')
         await client.delete_message(message)
 
