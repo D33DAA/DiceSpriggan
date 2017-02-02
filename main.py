@@ -1,3 +1,5 @@
+#DiceSpriggan, a Discord chat bot
+#Copyright (C) 2017  George Gale
 try:
     import discord, random, logging, asyncio, re
 except:
@@ -16,7 +18,8 @@ client = discord.Client()
 async def dice_roller(message):
     sender = message.author.display_name or message.author.name
     content = (message.content).split()[1]
-    if not re.search((r"\d+d\d+[+/*-]{0,1}\d*"),content):
+    #ensure correct syntax via RegEx - <dice>d<sides><opr><mod>
+    if not re.search((r"^\d+d\d+[+/*-]{0,1}\d*"),content):
         errorCode = "... Jig?\n```The spriggan is confused. Please ensure your roll follows the correct syntax.```"
         return errorCode
     
@@ -91,7 +94,7 @@ async def on_message(message):
         output = "**Jig!**"
         jigs += 1
         if message.content == ("/jig -total"):
-            output += ("\nThere have been "+str(jigs)+" jigs since last restart.")
+            output += ("\nThere have been {0} jigs since last restart.".format(jigs))
         await client.send_message(message.channel,output)
         await client.delete_message(message)
     if message.content == ("/egg"):
