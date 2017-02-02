@@ -12,80 +12,89 @@ logger.addHandler(handler)
 
 client = discord.Client() 
 
-@client.async_event
-def dice_roller(message):
-    sender = message.author
+@client.event
+async def dice_roller(message):
+    sender = message.author.display_name or message.author.name
     content = (message.content).split()[1]
-    diceNum = int(content.split("d")[0])
-    diceRem = content.split("d")[1]
+    diceNumber = int(content.split("d")[0])
+    diceRemain = content.split("d")[1]
     diceSide = 0
     diceMod = 0
-    diceOpr = 0
+    diceOperator = 0
 
-    if diceNum == 0:
-        yield from client.send_message(message.channel,"Is {0} is want spriggy roll dice with no dice? ... Jig?".format(sender))
-        return None
+    if diceNumber == 0:
+        errorCode = "Is {0} is want spriggy roll dice with no dice? ... Jig?\n```The spriggan is confused. You cannot roll zero dice.```"
+        return errorCode.format(sender)
     
-    if "+" in diceRem:
-        diceSide = int(diceRem.split("+")[0])
-        diceMod = int(diceRem.split("+")[1])
-        diceOpr = "+"
-    elif "-" in diceRem:
-        diceSide = int(diceRem.split("-")[0])
-        diceMod = int(diceRem.split("-")[1])
-        diceOpr = "-"
-    elif "*" in diceRem:
-        diceSide = int(diceRem.split("*")[0])
-        diceMod = int(diceRem.split("*")[1])
-        diceOpr = "*"
-    elif "/" in diceRem:
-        diceSide = int(diceRem.split("/")[0])
-        diceMod = int(diceRem.split("/")[1])
-        diceOpr = "/"
+    if "+" in diceRemain:
+        diceSide = int(diceRemain.split("+")[0])
+        diceMod = int(diceRemain.split("+")[1])
+        diceOperator = "+"
+    elif "-" in diceRemain:
+        diceSide = int(diceRemain.split("-")[0])
+        diceMod = int(diceRemain.split("-")[1])
+        diceOperator = "-"
+    elif "*" in diceRemain:
+        diceSide = int(diceRemain.split("*")[0])
+        diceMod = int(diceRemain.split("*")[1])
+        diceOperator = "*"
+    elif "/" in diceRemain:
+        diceSide = int(diceRemain.split("/")[0])
+        diceMod = int(diceRemain.split("/")[1])
+        diceOperator = "/"
     else:
-        diceSide = int(diceRem)
+        diceSide = int(diceRemain)
 
     if diceSide == 0:
-        yield from client.send_message(message.channel,"Is {0} is want spriggy is roll dice with no SIDES?! Is Spriggy is LOSE DICE? WHERE IS DICE?! **AAAAIIEEEEEE!!**".format(sender))
-        return None
+        errorCode = "Is {0} is want spriggy is roll dice with no SIDES?! Is Spriggy is LOSE DICE? WHERE IS DICE?! **AAAAIIEEEEEE!!**\n```The spriggan is confused. You cannot roll a dice with no sides.```"
+        return errorCode.format(sender)
 
     diceTotal = []
-    for num in range(diceNum):
+    for num in range(diceNumber):
         diceTotal.append(random.randint(1,diceSide))
-
+    
     if diceMod != 0:
-        if diceOpr == "+":
+        if diceOperator == "+":
             diceFinal = sum(diceTotal) + diceMod
-        elif diceOpr == "-":
+        elif diceOperator == "-":
             diceFinal = sum(diceTotal) - diceMod
-        elif diceOpr == "*":
+        elif diceOperator == "*":
             diceFinal = sum(diceTotal) * diceMod
-        elif diceOpr == "/":
+        elif diceOperator == "/":
             diceFinal = sum(diceTotal) / diceMod
-            
-    diceMessage = "{0}: ```{1}```*{2}{3}{4}* (**{5}**)"
-    output = diceMessage.format(sender,content,diceTotal,diceOpr,diceMode,diceFinal)
+        diceMessage = "{0} rolls: `{1}`*{2}{3}{4}* (**{5}**)"
+        output = (diceMessage.format(sender,content,str(diceTotal),diceOperator,str(diceMod),str(diceFinal)))  
+    else:
+        diceFinal = sum(diceTotal)
+        diceMessage = "{0} rolls: `{1}`*{2}* (**{3}**)"
+        output = diceMessage.format(sender,content,str(diceTotal),str(diceFinal))
+    
     return output
 
-@client.async_event
-def on_message(message):
-    if message.content.startswith("/roll"):
-        print(dice_roller(message))
-        #yield from client.send_message(message.channel,dice_roller(message))
-    if message.content == ("/jig"):
+@client.event
+async def on_message(message):
+    if message.content.startswith("/roll") or message.content.startswith("/r"):
+        await client.send_message(message.channel,(await dice_roller(message)))
+        await client.delete_message(message)
+    if message.content.startswith("/jig"):
         global jigs
-        yield from client.send_message(message.channel,"**Jig!**\nThere have been "+str(jigs)+" jigs since last restart.")
+        output = "**Jig!**"
         jigs += 1
+        if message.content == ("/jig -total"):
+            output += ("\nThere have been "+str(jigs)+" jigs since last restart.")
+        await client.send_message(message.channel,output)
+        await client.delete_message(message)
     if message.content == ("/egg"):
-        yield from client.send_message(message.channel,"SHINY EGG! **GIVE TO SPRIGGY!!**")
+        await client.send_message(message.channel,"SHINY EGG! **GIVE TO SPRIGGY!!**")
     if message.content == ("/help") or message.content == ("/?"):
-        yield from client.send_message(message.channel,
+        await client.send_message(message.channel,
             '''```DiceSpriggan Commands:
 ===========
 /help /? - display this menu
 /jig - Jig!
-/roll 1d20 - rolls a 20-sided dice. accepts modifiers and multiple dice
+/roll 1d20 /r 1d20 - rolls a 20-sided dice. accepts modifiers and multiple dice
 /egg - we don't talk about eggs here...```''')
+        await client.delete_message(message)
 
 jigs = 0
 with open("client key.txt", "r") as f:
