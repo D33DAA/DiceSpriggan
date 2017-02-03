@@ -19,7 +19,7 @@ async def dice_roller(message):
     sender = message.author.display_name or message.author.name
     content = (message.content).split()[1]
     #ensure correct syntax via RegEx - <dice>d<sides><opr><mod>
-    if not re.search((r"^\d+d\d+[+/*-]{0,1}\d*"),content):
+    if not re.search((r"^\d+d\d+[+/*-]{0,1}\d*$"),content):
         errorCode = "... Jig?\n```The spriggan is confused. Please ensure your roll follows the correct syntax.```"
         return errorCode
     
@@ -83,6 +83,10 @@ async def dice_roller(message):
         output = diceMessage.format(sender,content,diceTotal,diceFinal)
     
     return output
+
+@client.event
+async def on_ready():
+    await client.change_presence(game=discord.Game(name="with shiny rocks"))
 
 @client.event
 async def on_message(message):
