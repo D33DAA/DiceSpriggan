@@ -1,10 +1,6 @@
 #DiceSpriggan, a Discord chat bot
 #Copyright (C) 2017  George Gale
-try:
-    import discord, random, logging, asyncio, re
-except:
-    input("Some modules don't appear to be in place.\nPress Enter to exit.")
-    quit()
+import discord, random, logging, asyncio, re
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
