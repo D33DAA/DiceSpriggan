@@ -57,6 +57,9 @@ async def dice_roller(message):
     elif diceSide < 2:
         errorCode = "Is {0} is want spriggy is roll dice with no SIDES?! Is Spriggy is LOSE DICE? WHERE IS DICE?! **AAAAIIEEEEEE!!**\n```The spriggan is confused. You cannot roll a dice with no sides.```"
         return errorCode.format(sender)
+    elif diceSide > 1000:
+        errorCode = "J-Jig? Jiiiiiiig! ... **JIIIIIIIG!** ...\n```The spriggan struggles to lift the dice. Please roll smaller dice.```"
+        return errorCode
 
     diceTotal = []
     for num in range(diceNumber):
